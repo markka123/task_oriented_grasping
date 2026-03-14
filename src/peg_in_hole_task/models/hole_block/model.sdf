@@ -1,0 +1,93 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="hole_block">
+    <static>true</static>
+
+    <!-- Overall plate size -->
+    <!-- W = 0.80, H = 0.80, T = 0.04 -->
+    <!-- Hole size: 0.032 (x) × 0.014 (y) -->
+
+    <!-- Derived values -->
+    <!-- Half plate width = 0.40 -->
+    <!-- Half plate height = 0.40 -->
+    <!-- Half hole width = 0.016 -->
+    <!-- Half hole height = 0.007 -->
+
+    <!-- Left block -->
+    <link name="left_block">
+      <pose>-0.208 0 0.02 0 0 0</pose>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>0.384 0.80 0.04</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>0.384 0.80 0.04</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+    <!-- Right block -->
+    <link name="right_block">
+      <pose>0.208 0 0.02 0 0 0</pose>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>0.384 0.80 0.04</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>0.384 0.80 0.04</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+    <!-- Top block -->
+    <link name="top_block">
+      <pose>0 0.2035 0.02 0 0 0</pose>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>0.032 0.393 0.04</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>0.032 0.393 0.04</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+    <!-- Bottom block -->
+    <link name="bottom_block">
+      <pose>0 -0.2035 0.02 0 0 0</pose>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>0.032 0.393 0.04</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>0.032 0.393 0.04</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+  </model>
+</sdf>

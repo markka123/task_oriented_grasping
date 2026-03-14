@@ -1,0 +1,19 @@
+# ROS 2 build artifacts
+build/
+install/
+log/
+
+# Upstream dependency managed via .repos
+src/Universal_Robots_ROS2_Gazebo_Simulation/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.eggs/
+*.egg-info/
+
+# Editor
+.vscode/
+.idea/
+*.swp
