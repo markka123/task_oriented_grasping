@@ -19,12 +19,10 @@ from launch.actions import (
     DeclareLaunchArgument,
     IncludeLaunchDescription,
     OpaqueFunction,
-    RegisterEventHandler,
     SetEnvironmentVariable,
     TimerAction,
 )
 from launch.conditions import IfCondition
-from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import (
     Command,
@@ -152,30 +150,36 @@ def launch_setup(context, *args, **kwargs):
         output='screen',
     )
 
-    # 4. joint_state_broadcaster – starts after spawn_robot exits
+    # Controllers 4 / 5a / 5b – all three spawners start immediately at launch.
+    # --controller-manager-timeout 60 makes each spawner wait up to 60 s for
+    # /controller_manager to become available (it only appears after the robot
+    # is spawned into Gazebo).  This eliminates the OnProcessExit chain that
+    # previously added ~15 s of delay before the arm controller activated,
+    # which caused the arm to fall under gravity before being controlled.
     joint_state_broadcaster = Node(
         package='controller_manager',
         executable='spawner',
         arguments=['joint_state_broadcaster',
-                   '--controller-manager', '/controller_manager'],
+                   '--controller-manager', '/controller_manager',
+                   '--controller-manager-timeout', '60'],
         output='screen',
     )
 
-    # 5a. Arm controller – starts after joint_state_broadcaster exits
     arm_controller = Node(
         package='controller_manager',
         executable='spawner',
         arguments=['joint_trajectory_controller',
-                   '--controller-manager', '/controller_manager'],
+                   '--controller-manager', '/controller_manager',
+                   '--controller-manager-timeout', '60'],
         output='screen',
     )
 
-    # 5b. Gripper controller – starts alongside arm controller
     gripper_controller = Node(
         package='controller_manager',
         executable='spawner',
         arguments=['gripper_controller',
-                   '--controller-manager', '/controller_manager'],
+                   '--controller-manager', '/controller_manager',
+                   '--controller-manager-timeout', '60'],
         output='screen',
     )
 
@@ -242,28 +246,13 @@ def launch_setup(context, *args, **kwargs):
         )],
     )
 
-    # ── Event-driven sequencing ───────────────────────────────────────────────
-    # jsb starts only after spawn_entity exits (controller_manager is online)
-    jsb_after_spawn = RegisterEventHandler(
-        OnProcessExit(
-            target_action=spawn_robot,
-            on_exit=[joint_state_broadcaster],
-        )
-    )
-    # arm + gripper controllers start only after jsb exits
-    controllers_after_jsb = RegisterEventHandler(
-        OnProcessExit(
-            target_action=joint_state_broadcaster,
-            on_exit=[arm_controller, gripper_controller],
-        )
-    )
-
     return [
         gazebo,
         rsp,
         spawn_robot,
-        jsb_after_spawn,
-        controllers_after_jsb,
+        joint_state_broadcaster,
+        arm_controller,
+        gripper_controller,
         move_group,
         rviz,
         spawn_task,

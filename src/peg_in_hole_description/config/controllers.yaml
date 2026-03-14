@@ -1,3 +1,10 @@
+# Prevent the arm from falling under gravity before ros2_control controllers
+# claim the joints.  gazebo_ros2_control 0.4.x defaults hold_joints to false;
+# setting it here (top-level, read by the plugin's own ROS node) forces the
+# GazeboSystem to call SetPosition() every physics step at the initial_value
+# until a trajectory controller takes over.
+hold_joints: true
+
 controller_manager:
   ros__parameters:
     update_rate: 100
