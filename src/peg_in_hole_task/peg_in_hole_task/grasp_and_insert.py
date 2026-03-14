@@ -88,8 +88,12 @@ APPROACH_HEIGHT = 0.12  # m – stand-off above grasp for pre-grasp pose
 LIFT_HEIGHT     = 0.15  # m – clearance after grasp before moving to hole
 
 # Hole geometry (world frame) – must match task_params.yaml
-HOLE_POSITION  = (-0.80, 0.00, 0.45)
-INSERT_DEPTH   = 0.05   # m – how far to push past the hole face
+# Hole plate: 80×80 cm face, 4 cm thick, vertical, facing the robot.
+# With rpy=[0, π/2, 0] the plate thickness is along world X and the 80 cm
+# span is along world Z.  Bottom of plate = hz − 0.40 = 0.00 (at floor).
+# Robot approaches from the −X side and inserts in the +X direction.
+HOLE_POSITION  = (0.55, 0.00, 0.40)
+INSERT_DEPTH   = 0.05   # m – how far to push past the hole face centre
 
 
 # ── Rotation / quaternion helpers ─────────────────────────────────────────────
@@ -397,22 +401,25 @@ class GraspAndInsert(Node):
 
     def _insertion_poses(self) -> tuple[Pose, Pose]:
         """Pre-insertion (in front of hole) and insertion (through hole face)."""
-        # Hole faces along +X; TCP approaches from +X side (TCP Z = world -X)
-        x_ax = np.array([ 0.0,  0.0, -1.0])   # TCP X = world -Z (finger axis up)
-        z_ax = np.array([-1.0,  0.0,  0.0])   # TCP Z = world -X (approach into hole)
+        # Hole plate is vertical, facing the robot (normal points in −X world direction).
+        # TCP Z = world +X: the gripper approaches from the −X side and pushes in +X.
+        # TCP X = world +Z so that fingers are oriented vertically (less chance of collision
+        # with the plate edges).
+        x_ax = np.array([0.0,  0.0,  1.0])   # TCP X = world +Z (finger axis vertical)
+        z_ax = np.array([1.0,  0.0,  0.0])   # TCP Z = world +X (insertion direction)
         y_ax = np.cross(z_ax, x_ax)
         tcp_rot = Rotation.from_matrix(np.column_stack([x_ax, y_ax, z_ax]))
         q = quat_from_rotation(tcp_rot)
 
         hx, hy, hz = HOLE_POSITION
         pre = Pose()
-        pre.position.x = hx + APPROACH_HEIGHT
+        pre.position.x = hx - APPROACH_HEIGHT   # stand-off on the robot side
         pre.position.y = hy
         pre.position.z = hz
         pre.orientation = q
 
         ins = Pose()
-        ins.position.x = hx - INSERT_DEPTH
+        ins.position.x = hx + INSERT_DEPTH      # pushed through to the far side
         ins.position.y = hy
         ins.position.z = hz
         ins.orientation = q
@@ -470,7 +477,7 @@ class GraspAndInsert(Node):
             if not self._move_to_pose(insert_pose, 'insert'):
                 outcome['failure_stage'] = 'insert'; return
 
-            outcome['success'] = self._peg_pose.pose.position.x < HOLE_POSITION[0]
+            outcome['success'] = self._peg_pose.pose.position.x > HOLE_POSITION[0]
 
         finally:
             self.get_logger().info('Step 8 – release')

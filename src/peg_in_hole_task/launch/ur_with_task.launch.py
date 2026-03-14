@@ -20,6 +20,7 @@ from launch.actions import (
     IncludeLaunchDescription,
     OpaqueFunction,
     RegisterEventHandler,
+    SetEnvironmentVariable,
     TimerAction,
 )
 from launch.conditions import IfCondition
@@ -272,6 +273,10 @@ def launch_setup(context, *args, **kwargs):
 
 def generate_launch_description():
     return LaunchDescription([
+        # Disable Gazebo's online model database lookup.  Without this, Gazebo
+        # shows "Preparing your world..." for several minutes while it tries to
+        # reach the Fuel server even though all models are cached locally.
+        SetEnvironmentVariable('GAZEBO_MODEL_DATABASE_URI', ''),
         DeclareLaunchArgument('ur_type',           default_value='ur5e'),
         DeclareLaunchArgument('safety_limits',     default_value='true'),
         DeclareLaunchArgument('safety_pos_margin', default_value='0.15'),

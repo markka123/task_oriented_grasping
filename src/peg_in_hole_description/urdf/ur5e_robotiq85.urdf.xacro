@@ -28,25 +28,6 @@
   <!-- World link -->
   <link name="world"/>
 
-  <!-- Ground plane (Gazebo only) -->
-  <xacro:if value="$(arg sim_gazebo)">
-    <link name="ground_plane">
-      <visual>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry><box size="5 5 0"/></geometry>
-      </visual>
-      <collision>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry><box size="5 5 0"/></geometry>
-      </collision>
-    </link>
-    <joint name="ground_plane_joint" type="fixed">
-      <origin xyz="0 0 -0.01" rpy="0 0 0"/>
-      <parent link="world"/>
-      <child link="ground_plane"/>
-    </joint>
-  </xacro:if>
-
   <!-- UR arm -->
   <xacro:ur_robot
     name="$(arg name)"
